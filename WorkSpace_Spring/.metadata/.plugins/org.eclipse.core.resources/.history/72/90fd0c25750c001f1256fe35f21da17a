@@ -1,0 +1,36 @@
+package com.davivienda.capacitacion.posrest.dto;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+
+
+public class ClienteDto implements Serializable {
+
+	
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1444249652519760720L;
+	
+	private ClienteDtoPK id;
+	
+	private String celular;
+
+	private String correoElectronico;
+
+
+	private LocalDate fechaNacimiento;
+
+	private String nombre;
+
+	private Integer numeroHijos;
+
+	
+	private List<FacturaDto> lstFacturas;
+
+	
+	
+}

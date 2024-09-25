@@ -1,0 +1,5 @@
+package com.davivienda.capacitacion.posrest.dto;
+
+public class ProductoFacturaDtoPK {
+
+}

@@ -1,0 +1,15 @@
+package com.davivienda.capacitacion.posrest.dto;
+
+public class FacturaDto {
+	
+private ProductoFacturaDtoPK id;
+	
+	private Integer numero;
+	
+	private ClienteDto cliente;
+	
+	private LocalDate fecha;
+	
+	private List<ProductoFacturaDto> lstProductosFactura;
+
+}

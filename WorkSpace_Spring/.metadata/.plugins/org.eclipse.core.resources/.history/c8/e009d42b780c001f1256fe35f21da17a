@@ -1,0 +1,5 @@
+package com.davivienda.capacitacion.posrest.controller;
+
+public class FacturaController {
+
+}

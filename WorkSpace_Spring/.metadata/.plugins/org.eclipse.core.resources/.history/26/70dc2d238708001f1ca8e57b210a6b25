@@ -1,0 +1,89 @@
+package com.davivienda.capacitacion.posrest.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import com.davivienda.capacitacion.posrest.dto.ProductoDto;
+import com.davivienda.capacitacion.posrest.error.PosRestError;
+import com.davivienda.capacitacion.posrest.modelo.Producto;
+import com.davivienda.capacitacion.posrest.repository.ProductoRepository;
+
+@Service
+public class ProductoService {
+	
+	@Autowired
+	private ProductoRepository productoDao;
+	
+	@Autowired
+	private ModelMapper modelMapper;
+	
+	public ProductoDto findByPrimaryKey(String id) {
+		Optional<Producto> optProd = productoDao.findById(id);
+		if(optProd.isPresent()) {
+			Producto producto = optProd.get();
+			ProductoDto productoDto = this.modelMapper.map(producto, ProductoDto.class);
+			return productoDto;
+		}
+		throw new PosRestError("Producto no encontrado", HttpStatus.NOT_FOUND);
+	}
+	
+	public List<ProductoDto> findAll(){
+		List<ProductoDto> lstResultado = new ArrayList<ProductoDto>();
+		List<Producto> lstProductos = this.productoDao.findAll();
+		
+		for(Producto prod : lstProductos) {
+			ProductoDto productoDto = this.modelMapper.map(prod, ProductoDto.class);
+			lstResultado.add(productoDto);
+		}
+		
+		return lstResultado;
+	}
+	
+	public void create(Producto prod) {
+		this.productoDao.save(prod);
+	}
+	
+	public void create(ProductoDto prodDto) {
+		Producto prodEnt = this.modelMapper.map(prodDto, Producto.class);
+		this.productoDao.save(prodEnt);
+	}
+	
+	public void delete(String id) {
+		Optional<Producto> optProd = productoDao.findById(id);
+		if(optProd.isPresent()) {
+			Producto producto = optProd.get();
+			this.productoDao.delete(producto);
+		}else {
+			throw new PosRestError("Producto no existe en la base de datos", HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	public void update(ProductoDto prodDto) {
+			
+		Optional<Producto> optProd = this.productoDao.findById(prodDto.getCodigo());
+		
+		if (optProd.isPresent()) {
+			
+			Producto prodEnt = optProd.get();
+			
+			prodEnt.setNombre(prodDto.getNombre());
+			prodEnt.setValor(prodDto.getValor());
+			
+			this.productoDao.save(prodEnt);
+			
+		} else {
+		
+			throw new PosRestError("Producto no existe en la base de datos", HttpStatus.NOT_FOUND);
+		}
+			
+	}
+	
+	public List<ProductoDto> findByValor()
+
+}

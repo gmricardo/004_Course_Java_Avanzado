@@ -1,0 +1,13 @@
+package com.davivienda.capacitacion.posrest;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class PosrestApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(PosrestApplication.class, args);
+	}
+
+}

@@ -1,0 +1,90 @@
+package com.davivienda.capacitacion.posrest.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.davivienda.capacitacion.posrest.dto.ProductoDto;
+import com.davivienda.capacitacion.posrest.modelo.Producto;
+import com.davivienda.capacitacion.posrest.service.ProductoService;
+
+@RestController
+@RequestMapping("/product")
+public class ProductoController {
+	
+	@Autowired
+	private ProductoService prodSvc;
+	
+	@GetMapping("/find/{id}")
+	public ProductoDto findByPrimaryKey(@PathVariable("id") String id) {
+		ProductoDto p = prodSvc.findByPrimaryKey(id);
+		return p;
+	}
+
+	@GetMapping("/findAll")
+	public List<ProductoDto> findAll() {
+		List<ProductoDto> lstProductos = this.prodSvc.findAll(); 
+		return lstProductos;
+	}
+	
+	@PostMapping("/create")
+	public void create(@RequestBody Producto prod) {
+		System.out.println("En el create1: "+prod.getCodigo()+ "-" + prod.getNombre() + "-" + prod.getValor());
+		this.prodSvc.create(prod);
+	}
+	
+	@PostMapping("/create2")
+	public void create(@RequestBody ProductoDto prod) {
+		System.out.println("En el create2: "+prod.getCodigo()+ "-" + prod.getNombre() + "-" + prod.getValor());
+		this.prodSvc.create(prod);
+	}
+	
+	@DeleteMapping("/delete/{id}")
+	public void delete(@PathVariable("id") String id) {
+		this.prodSvc.delete(id);
+	}
+	
+	@PostMapping("/delete")
+	public void delete(@RequestBody ProductoDto prod) {
+		System.out.println("En el Delete con POST................");
+		this.prodSvc.delete(prod.getCodigo());
+	}
+	
+	@PutMapping("/update/{id}/{nombre}/{valor}")
+	public void update(@PathVariable("id") String id, @PathVariable("nombre") String nombre, @PathVariable("valor") Double valor) {
+		System.out.println("En el update con PUT................");
+		ProductoDto prodDto = new ProductoDto();
+		prodDto.setCodigo(id);
+		prodDto.setNombre(nombre);
+		prodDto.setValor(valor);
+		this.prodSvc.update(prodDto);
+	}
+	
+	@PostMapping("/update")
+	public void update(@RequestBody ProductoDto prod) {
+		System.out.println("En el update con POST................");
+		this.prodSvc.update(prod);
+	}
+	
+	//---------------------------------------------------------------------------------
+	
+	@GetMapping("/findByValor/{valor}")
+	public List<ProductoDto> findByValor(@PathVariable("valor") Double valor) {
+		List<ProductoDto> lstResultado = prodSvc.findByValor(valor);
+		return lstResultado;
+	}
+	
+	@GetMapping("/findByValorAndNombre/{valor}/{nombre}")
+	public List<ProductoDto> findByValorAndNombre(@PathVariable("valor") Double valor, @PathVariable("nombre") String nombre) {
+		List<ProductoDto> lstResultado = prodSvc.findByValorAndNombre(valor, nombre);
+		return lstResultado;
+	}
+}

@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html 
+		xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core">
+    <h:head>
+    </h:head>
+    <h:body>
+
+        <h1>Producto</h1>
+        <br />
+        <h:body>
+        	<h1>Producto</h1>
+        	<br />
+        	<h:form id="frmProducto">
+        		<h:outputLabel value="Codigo:" />
+        		<h:inputText value="#{indexMB.producto.codigo}" />
+        		<br />
+        		<h:outputLabel value="Nombre:" />
+        		<h:inputText value="#{indexMB.producto.nombre}" />
+        		<br />
+        		<h:outputLabel value="Valor:" />
+        		<h:inputText value="#{indexMB.producto.valor}" />
+        		<br />
+        		<h:commandButton id="btnCrear" 
+        			value= "Crear"
+        			action="#{indexMB.guardar}" />
+        	</h:form>
+        </h:body>
+
+    </h:body>
+</html>

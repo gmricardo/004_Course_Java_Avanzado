@@ -1,0 +1,26 @@
+package com.davivienda.capacitacion.posrest.repository;
+
+import java.util.List;
+
+
+import org.springframework.stereotype.Repository;
+
+import com.davivienda.capacitacion.posrest.modelo.Producto;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+
+@Repository
+public class ProductoRepositoryPer {
+	
+	@PersistenceContext
+	private EntityManager em;
+	
+	public List<Producto> consultarTodos() {
+		System.out.println("Consulta desde el repositorio personalizado");
+		Query query = em.createQuery("SELECT p FROM Producto p");
+		return query.getResultList();
+	}
+
+}

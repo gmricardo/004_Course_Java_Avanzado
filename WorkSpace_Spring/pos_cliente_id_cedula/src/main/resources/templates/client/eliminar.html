@@ -1,0 +1,28 @@
+<html>
+
+<head>
+	<title>Eliminar Cliente</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+
+<body class="container">
+	<header ></header>
+	<h1>Eliminar Cliente</h1>
+	<form action="/cliente/eliminar" th:object="${cliente}" method="post">
+
+		¿Esta seguro que desea eliminar el cliente [[${cliente.nombre}]] con código [[${cliente.cedula}]]?
+
+		<input class="form-control" id="txtValor" type="hidden" th:field="${cliente.cedula}">
+
+		<button type="submit" class="btn btn-primary mt-4">Eliminar</button>
+
+	</form>
+
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+	integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+	crossorigin="anonymous"></script>
+
+</html>

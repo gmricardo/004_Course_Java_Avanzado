@@ -1,0 +1,14 @@
+package com.davivienda.capacitacion.posrest.dto;
+
+public class ProductoFacturaDto {
+
+private ProductoFacturaDtoPK id;
+	
+	private Integer cantidadProducto;
+	
+	private Double valorUnitario;
+	
+	private FacturaDto factura;
+	
+	private ProductoDto producto;
+}

@@ -1,0 +1,25 @@
+package com.davivienda.capacitacion.posrest.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.davivienda.capacitacion.posrest.modelo.Producto;
+
+@Repository
+public interface ProductoRepository extends JpaRepository<Producto, String> {
+
+	List<Producto> findByValor(Double valor);
+	List<Producto> findByValorAndNombre(Double valor, String nombre);
+	
+	@Query(value="SELECT p FROM Producto p WHERE p.valor >= :valorMinimo AND p.valor <= :valorMaximo", nativeQuery = false)
+	List<Producto> findByValorRango(Double valorMinimo, Double valorMaximo);
+	
+	@Query(value = "SELECT * FROM Productos p WHERE p.valor BETWEEN :valorMinimo AND :valorMaximo", nativeQuery=true)
+	List<Producto> findByValorRangoNativo (Double valorMinimo, Double valorMaximo);
+	
+	@Query(value = "SELECT COUNT(1) FROM Productos", nativeQuery=true)
+	public Integer contarProductos();
+}

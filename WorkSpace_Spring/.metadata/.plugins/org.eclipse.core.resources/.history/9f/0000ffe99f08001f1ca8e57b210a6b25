@@ -1,0 +1,24 @@
+package com.davivienda.capacitacion.posrest.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.davivienda.capacitacion.posrest.modelo.Producto;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
+@Repository
+public class ProductoRepositoryPer {
+	
+	@PersistenceContext
+	private EntityManager em;
+	
+	public List<Producto> consultarTodos() {
+		Query query = em.createQuery("SELECT p FROM producto");
+		return query.getResultList();
+	}
+
+}

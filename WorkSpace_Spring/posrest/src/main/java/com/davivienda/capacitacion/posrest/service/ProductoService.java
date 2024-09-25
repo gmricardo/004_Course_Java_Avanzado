@@ -1,0 +1,190 @@
+package com.davivienda.capacitacion.posrest.service;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import com.davivienda.capacitacion.posrest.dto.ProductoDto;
+import com.davivienda.capacitacion.posrest.error.PosRestError;
+import com.davivienda.capacitacion.posrest.modelo.Producto;
+import com.davivienda.capacitacion.posrest.repository.ProductoRepository;
+import com.davivienda.capacitacion.posrest.repository.ProductoRepositoryPer;
+
+@Service
+public class ProductoService {
+	
+	@Autowired
+	private ProductoRepository productoDao;
+	
+	@Autowired
+	private ProductoRepositoryPer productoDaoPer;
+	
+	@Autowired
+	private ModelMapper modelMapper;
+	
+	public ProductoDto findByPrimaryKey(String id) {
+		Optional<Producto> optProd = productoDao.findById(id);
+		if(optProd.isPresent()) {
+			Producto producto = optProd.get();
+			ProductoDto productoDto = this.modelMapper.map(producto, ProductoDto.class);
+			return productoDto;
+		}
+		throw new PosRestError("Producto no encontrado", HttpStatus.NOT_FOUND);
+	}
+	
+	public List<ProductoDto> findAll(){
+		List<ProductoDto> lstResultado = new ArrayList<ProductoDto>();
+		List<Producto> lstProductos = this.productoDao.findAll();
+		
+		for(Producto prod : lstProductos) {
+			ProductoDto productoDto = this.modelMapper.map(prod, ProductoDto.class);
+			lstResultado.add(productoDto);
+		}
+		
+		return lstResultado;
+	}
+	
+	public void create(Producto prod) {
+		this.productoDao.save(prod);
+	}
+	
+	public void create(ProductoDto prodDto) {
+		Producto prodEnt = this.modelMapper.map(prodDto, Producto.class);
+		this.productoDao.save(prodEnt);
+	}
+	
+	public void delete(String id) {
+		Optional<Producto> optProd = productoDao.findById(id);
+		if(optProd.isPresent()) {
+			Producto producto = optProd.get();
+			this.productoDao.delete(producto);
+		}else {
+			throw new PosRestError("Producto no existe en la base de datos", HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	public void update(ProductoDto prodDto) {
+			
+		Optional<Producto> optProd = this.productoDao.findById(prodDto.getCodigo());
+		
+		if (optProd.isPresent()) {
+			
+			Producto prodEnt = optProd.get();
+			
+			prodEnt.setNombre(prodDto.getNombre());
+			prodEnt.setValor(prodDto.getValor());
+			
+			this.productoDao.save(prodEnt);
+			
+		} else {
+		
+			throw new PosRestError("Producto no existe en la base de datos", HttpStatus.NOT_FOUND);
+		}
+			
+	}
+	
+	public List<ProductoDto> findByValor(Double valor){
+		List<ProductoDto> lstResultado = new ArrayList<ProductoDto>();
+		List<Producto> lstProductos = this.productoDao.findByValor(valor);
+		
+		for(Producto prod : lstProductos) {
+			ProductoDto productoDto = this.modelMapper.map(prod, ProductoDto.class);
+			lstResultado.add(productoDto);
+		}
+		
+		return lstResultado;
+	}
+	
+	public List<ProductoDto> findByValorAndNombre(Double valor, String nombre){
+		List<ProductoDto> lstResultado = new ArrayList<ProductoDto>();
+		List<Producto> lstProductos = this.productoDao.findByValorAndNombre(valor,nombre);
+		
+		for(Producto prod : lstProductos) {
+			ProductoDto productoDto = this.modelMapper.map(prod, ProductoDto.class);
+			lstResultado.add(productoDto);
+		}
+		
+		return lstResultado;
+	}
+	
+	public List<ProductoDto> findByValorRango(Double valorMinimo, Double valorMaximo){
+		List<ProductoDto> lstResultado = new ArrayList<ProductoDto>();
+		List<Producto> lstProductos = this.productoDao.findByValorRango(valorMinimo, valorMaximo);
+		
+		for(Producto prod : lstProductos) {
+			ProductoDto productoDto = this.modelMapper.map(prod, ProductoDto.class);
+			lstResultado.add(productoDto);
+		}
+		
+		return lstResultado;
+	}
+	
+	public List<ProductoDto> findByValorRangoNativo(Double valorMinimo, Double valorMaximo){
+		List<ProductoDto> lstResultado = new ArrayList<ProductoDto>();
+		List<Producto> lstProductos = this.productoDao.findByValorRangoNativo(valorMinimo, valorMaximo);
+		
+		for(Producto prod : lstProductos) {
+			ProductoDto productoDto = this.modelMapper.map(prod, ProductoDto.class);
+			lstResultado.add(productoDto);
+		}
+		
+		return lstResultado;
+	}
+	
+	public Integer contarProductos() {
+		Integer count = this.productoDao.contarProductos();
+		return count;
+	}
+	
+	public List<ProductoDto> findByFecha(LocalDate fecha, Integer numPagina, Integer tamPagina){
+		List<ProductoDto> lstResultado = new ArrayList<ProductoDto>();
+		Pageable pageRequest = PageRequest.of(numPagina, tamPagina);
+		List<Producto> lstProductos = this.productoDao.findByFecha(fecha, pageRequest);
+		
+		for(Producto prod : lstProductos) {
+			ProductoDto productoDto = this.modelMapper.map(prod, ProductoDto.class);
+			lstResultado.add(productoDto);
+		}
+		
+		return lstResultado;
+	}
+	
+	public List<ProductoDto> findAllPaginable(Integer numPagina, Integer tamPagina, String sortBy, String ascdsc){
+		List<ProductoDto> lstResultado = new ArrayList<ProductoDto>();
+		Sort order = Sort.by(sortBy);
+		if(ascdsc.equals("DESC")) {
+			order = order.descending();
+		}
+		Pageable pageRequest = PageRequest.of(numPagina, tamPagina, order);
+		Page<Producto> pgProductos = this.productoDao.findAll(pageRequest);
+		List<Producto> lstProductos = pgProductos.getContent();
+		for(Producto prod : lstProductos) {
+			ProductoDto productoDto = this.modelMapper.map(prod, ProductoDto.class);
+			lstResultado.add(productoDto);
+		}
+		
+		return lstResultado;
+	}
+	
+	public List<ProductoDto> consultarTodos(){
+		List<ProductoDto> lstResultado = new ArrayList<ProductoDto>();
+		List<Producto> lstProductos = this.productoDaoPer.consultarTodos();
+		
+		for(Producto prod : lstProductos) {
+			ProductoDto productoDto = this.modelMapper.map(prod, ProductoDto.class);
+			lstResultado.add(productoDto);
+		}
+		
+		return lstResultado;
+	}
+}

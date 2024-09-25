@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Login</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script>
+		
+		var ObjLlaveAES;
+		
+		function generarFraseAES() {
+            let buf = new ArrayBuffer(16);
+            let bufView = new Uint8Array(buf);
+            for (let i = 0; i < 16; i++) {
+              bufView[i] = 48 + Math.floor(Math.random() * 42);
+            }
+            let claveAes = arrayBufferToString(bufView);
+            let claveAesB64 = window.btoa(claveAes);
+            sessionStorage.setItem("claveAesB64",claveAesB64);
+            console.log("Frase AES generada: " + claveAes);
+        }
+		
+		function inicializar() {
+
+		   alert("Se consulta la llave publica");
+		   $.ajax({
+				type: "GET",
+				url: "http://localhost:8080/servicios-soap-rest/login/obtenerLlavePublica",
+				success: function(data) {
+						console.log(data.consecutivo);
+						console.log(data.llavePublica);
+						sessionStorage.setItem("LlavePublicaB64", data.llavePublica);
+						
+					}
+			});
+			
+			generarFraseAES();
+			
+			let binClave = stringToArrayBuffer(window.atob(sessionStorage.getItem("claveAesB64")));
+			window.crypto.subtle.importKey(
+				"raw",
+				binClave,
+				"AES-GCM",
+				true,
+				["encrypt", "decrypt"]
+			).then((clave) => {
+				this.ObjLlaveAES = clave;
+				console.log("Se importo la fraseAES y se genero objeto ObjLlaveAES");
+
+			}).catch(function (err) {
+				console.error(err);
+			});
+			
+		}
+		
+		function arrayBufferToString(str){
+			var byteArray = new Uint8Array(str);
+			var byteString = '';
+			for(var i=0; i < byteArray.byteLength; i++) {
+				byteString += String.fromCodePoint(byteArray[i]);
+			}
+			return byteString;
+		}
+
+		
+		function stringToArrayBuffer(str){
+			var buf = new ArrayBuffer(str.length);
+			var bufView = new Uint8Array(buf);
+			for (var i=0, strLen=str.length; i<strLen; i++) {
+				bufView[i] = str.charCodeAt(i);
+			}
+			return buf;
+		}
+
+		
+
+		function decifrar (datoCifradoB64) {
+            
+            let datoCifrado = window.atob(datoCifradoB64);
+            // Obtener el vector de inicialización (IV) desde los primeros 12 bytes del dato cifrado
+            let iv = datoCifrado.substring(0, 12);
+            let iv2 = stringToArrayBuffer(iv);
+
+            // Obtener el dato cifrado (sin IV) como un array de bytes
+            let dtoCif = datoCifrado.substring(12);
+            let vctDatoCifrado = stringToArrayBuffer(dtoCif);
+
+            // Descifrar los datos utilizando el vector de inicialización (IV) y la función decryptData
+            return window.crypto.subtle.decrypt({
+                    name: "AES-GCM",
+                    iv: iv2,
+                    tagLength: 128
+                },
+                ObjLlaveAES,
+                vctDatoCifrado
+            );
+        
+        }
+		
+		function cifrarFraseAES(publicKey, usrCifradoB64, clvCifradaB64) {
+			
+			let claveAesB64 = sessionStorage.getItem("claveAesB64");
+			let claveAes = window.atob(claveAesB64);
+			data = stringToArrayBuffer(claveAes);
+			
+			window.crypto.subtle.encrypt(
+				{name: "RSA-OAEP",
+				 hash: "SHA-1"
+				},
+				publicKey, 
+				data
+			).then((vctFraseAESCifrada) => {
+				
+				//convierto el array de bytes con el usuario cifrado a un string
+				let FraseAESCifrada = arrayBufferToString(vctFraseAESCifrada);
+				
+				//el string obtenido se codifica en base64 para enviarlo al servidor 
+				let FraseAESCifradaB64 = window.btoa(FraseAESCifrada);
+				
+				let formData = "{\"usuario\":\"" + usrCifradoB64 
+							+ "\",\"clave\":\"" + clvCifradaB64  
+							+ "\",\"fraseAES\":\"" + FraseAESCifradaB64  
+							+ "\"}";
+				alert(formData);
+				
+				$.ajax({
+				  type: "POST",
+				  url: "http://localhost:8080/servicios-soap-rest/login/login2",
+				  data: formData,
+				  success: function(rta){ 
+                                console.log("Token Cifrado:" + rta.JWT);
+                                procesarToken(rta.JWT);
+
+                            },
+				  dataType: "json",
+				  contentType : "application/json"
+				});
+				
+			});
+		}
+
+		function cifrar (dato, iv) {
+
+            
+let binDato = stringToArrayBuffer(dato);
+
+	// Realizar el cifrado utilizando el algoritmo "AES-GCM"
+return    window.crypto.subtle.encrypt(
+		{
+			name: "AES-GCM",
+			iv: iv,
+			tagLength: 128
+		},
+		ObjLlaveAES,
+		binDato
+	);
+
+}        
+
+function procesarToken (tokenCifradoB64) {
+
+decifrar(tokenCifradoB64)
+.then((vctDatoDecifrado) => {
+	console.log("Token Descifrado:" + arrayBufferToString(vctDatoDecifrado));
+	sessionStorage.setItem('JWT', arrayBufferToString(vctDatoDecifrado));
+	
+	consultarClientes();
+
+}).catch((err) => {
+	console.error(`Error al decifrar: ${err}`);
+});
+
+}
+
+function consultarClientes() {
+//
+let iv = window.crypto.getRandomValues(new Uint8Array(12));
+cifrar(sessionStorage.getItem('JWT'), iv)
+.then((vctDatoCifrado) => {
+	
+	let result = Array.from(iv).concat(Array.from(new Uint8Array(vctDatoCifrado)));
+	let tokenB64 = window.btoa(arrayBufferToString(result));
+
+	console.log("Token Cifrado B64:" + tokenB64);
+	$.ajax({
+	type: "GET",
+	headers: {"Authorization": tokenB64},
+	url: "http://localhost:8080/servicios-soap-rest/cliente/consultarTodos",
+	success: function(data) {
+			console.log(data);
+			let html = '';
+			for (let i in data) {
+				html = html + "<hr><span id = 'tipoId" + i + "'>" +  data[i].id.tipoIdentificacion + "</span> "
+							+ "<span id = 'nroId" + i + "'>" +  data[i].id.nroIdentificacion + "</span> "
+							+ "<span id = 'nom" + i + "'>" +  data[i].nombre + "</span><br>";
+				
+			}
+			
+			let elemento = document.getElementById('divClientes');
+			elemento.innerHTML = html;
+			
+		}
+	
+});
+
+}).catch((err) => {
+	console.error(`Error al decifrar: ${err}`);
+});
+}
+		
+		function cifrarClave(publicKey, usrCifradoB64, clv) {
+			data = stringToArrayBuffer(clv);
+			window.crypto.subtle.encrypt(
+				{name: "RSA-OAEP",
+				 hash: "SHA-1"
+				},
+				publicKey, 
+				data
+			).then((vctClvCifrada) => {
+			    //convierto el array de bytes con el usuario cifrado a un string
+				let clvCifrada = arrayBufferToString(vctClvCifrada);
+				
+				//el string obtenido se codifica en base64 para enviarlo al servidor 
+				let clvCifradaB64 = window.btoa(clvCifrada);
+				
+				cifrarFraseAES(publicKey, usrCifradoB64, clvCifradaB64);
+				
+			});
+		}
+		
+		function cifrarUsuario(publicKey, usr, clv) {
+		    data = stringToArrayBuffer(usr);
+			window.crypto.subtle.encrypt(
+				{name: "RSA-OAEP",
+				 hash: "SHA-1"
+				},
+				publicKey, 
+				data
+			).then((vctUsrCifrado) => {
+			    //convierto el array de bytes con el usuario cifrado a un string
+				let usrCifrado = arrayBufferToString(vctUsrCifrado);
+				
+				//el string obtenido se codifica en base64 para enviarlo al servidor 
+				let usrCifradoB64 = window.btoa(usrCifrado);
+				
+				cifrarClave(publicKey, usrCifradoB64, clv);
+				
+			});
+			
+		}
+		
+		function enviarDatos() {
+		   
+		   var usr = document.getElementById("txtUsuario").value;
+		   var clv = document.getElementById("txtClave").value;
+		   
+		   let llavPubB64 = sessionStorage.getItem("LlavePublicaB64");
+		   let llavPub = window.atob(llavPubB64); 
+		   let llavPubBin = stringToArrayBuffer(llavPub);
+		   
+		   window.crypto.subtle.importKey (
+			  "spki",
+			  llavPubBin,
+			  {
+				name: "RSA-OAEP",
+				hash: "SHA-1"
+			  },
+			  false,
+			  ["encrypt"]
+			).then(function(publicKey) {
+				
+				cifrarUsuario(publicKey, usr, clv);
+			
+			});
+		   
+		}   
+		
+		
+		</script>
+	</head>
+
+	<body onload="inicializar()">
+        <form id="frmLogin" >
+		  
+		  <label for="txtUsuario">Usuario:)</label><br>
+		  <input type="text" id="txtUsuario" name="txtUsuario"><br>
+		  
+		  <label for="txtClave">Clave:</label><br>
+		  <input type="text" id="txtClave" name="txtClave"><br>
+		  
+		  <input type="button" onclick = "enviarDatos()" value="Login">
+		  
+		</form>
+    </body>
+<html>

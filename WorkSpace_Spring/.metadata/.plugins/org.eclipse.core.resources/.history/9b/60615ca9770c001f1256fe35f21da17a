@@ -1,0 +1,30 @@
+package com.davivienda.capacitacion.posrest.service;
+
+@Service
+public class FacturaService {
+	
+	@Autowired
+	private FacturaRepository facturaDao;
+	
+	@Autowired
+	private ProductoFacturaRepository productoFacturaDao;
+	
+	@Autowired
+    private ModelMapper modelMapper;
+	
+	public FacturaDto findByPrimaryKey(Integer numero) {
+		
+		Optional<Factura> optFact = facturaDao.findById(numero);
+		
+		if (optFact.isPresent()) {
+			
+			Factura factura = optFact.get();
+			
+			FacturaDto fDto = this.modelMapper.map(factura, FacturaDto.class);
+			
+			return fDto;
+		}
+throw new PosRestError("Factura no encontrada", HttpStatus.NOT_FOUND);
+		
+	}
+}

@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html 
+		xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core"
+		 xmlns:p="http://primefaces.org/ui">
+    <h:head>
+    	<f:loadBundle basename="com.davivienda.capacitacion.mensajes.etiquetas" var="msj" />
+    </h:head>
+    <h:body>
+
+        <h:body>
+        	<h1><h:outputText value="#{msj.administrar_productos}" /></h1>
+        	<br />
+        	
+        	<div align="right">
+				<p:commandButton value="Nuevo Producto" update=":frmNuevoProducto"
+					action="#{productosMB.prepararCreacion}"
+					oncomplete="PF('dlgNuevo').show();" />
+			</div>
+		
+        	<h:form id="frmAdmProductos">
+        		<p:dataTable id="tblProductos" 
+        						value="#{productosMB.lstProductos}"
+								var="prod" 
+								emptyMessage="No hay productos" 
+								paginator="true"
+								rows="5">
+					<p:column headerText="#{msj.codigo}">
+						<h:outputText value="#{prod.codigo}" />
+					</p:column>
+					<p:column headerText="#{msj.nombre}">
+						<h:outputText value="#{prod.nombre}" />
+					</p:column>
+					<p:column headerText="#{msj.valor}">
+						<h:outputText value="#{prod.valor}" />
+					</p:column>
+					<p:column headerText="#{msj.usuario_crea}">
+						<h:outputText value="#{prod.usuarioCrea}" />
+					</p:column>
+					<p:column headerText="#{msj.fecha_creacion}">
+						<h:outputText value="#{prod.fechaCreacion}" />
+					</p:column>
+					<p:column headerText="Acciones">
+
+						<p:commandButton style="width: 20px; height: 20px;"
+							icon="pi pi-pencil" title="Editar"
+							oncomplete="PF('dlgEditar').show()" update=":frmEditarProducto"
+							action="#{productosMB.prepararEdicion}">
+							<f:setPropertyActionListener
+								target="#{productosMB.productoEditar}" value="#{prod}" />
+						</p:commandButton>
+	
+						<p:commandButton style="width: 20px; height: 20px;"
+							icon="pi pi-trash" title="#{msj.borrar}" update="frmAdmProductos"
+							action="#{productosMB.borrar}">
+							<f:setPropertyActionListener
+								target="#{productosMB.productoBorrar}" value="#{prod}" />
+						</p:commandButton>
+	
+					</p:column>
+				</p:dataTable>
+        	</h:form>
+        	
+        	<p:dialog id="dialogNew" header="Nuevo Producto" widgetVar="dlgNuevo"
+				resizable="false" showEffect="fade" hideEffect="drop" modal="true"
+				closable="true">
+	
+				<h:form id="frmNuevoProducto">
+					<h:panelGrid columns="4" cellpadding="10" width="100%">
+						<p:outputLabel value="Codigo:" />
+						<p:inputText value="#{productosMB.nuevoProducto.codigo}" />
+						<p:outputLabel value="Nombre: " />
+						<p:inputText value="#{productosMB.nuevoProducto.nombre}" />
+						<p:outputLabel value="Valor: " />
+						<p:inputText value="#{productosMB.nuevoProducto.valor}" />
+					</h:panelGrid>
+					<div align="center">
+					
+						<p:commandButton id="btnCrear" 
+											value="Guardar"
+											action="#{productosMB.guardar}" 
+											update=":frmAdmProductos"
+											oncomplete="PF('dlgNuevo').hide();" />
+						
+						<p:commandButton id="btnCancelar" 
+											value="Cancelar"
+											onclick="PF('dlgNuevo').hide();" 
+											type="reset" />
+					</div>
+				</h:form>
+	
+			</p:dialog>
+			
+			<p:dialog id="dialogEdit" header="Editar Producto"
+				widgetVar="dlgEditar" resizable="false" showEffect="fade"
+				hideEffect="drop" modal="true" closable="true">
+				<h:form id="frmEditarProducto">
+	
+					<h:panelGrid columns="4" cellpadding="10" width="100%">
+	
+						<p:outputLabel value="Codigo:" />
+						<p:inputText value="#{productosMB.productoEditar.codigo}" />
+						<p:outputLabel value="Nombre: " />
+						<p:inputText value="#{productosMB.productoEditar.nombre}" />
+	
+						<p:outputLabel value="Valor: " />
+						<p:inputText value="#{productosMB.productoEditar.valor}" />
+	
+						<p:outputLabel value="Fecha: " />
+						<p:calendar id="button" value="#{productosMB.productoEditar.fechaCreacion}" showOn="button" />
+	
+					</h:panelGrid>
+	
+					<div align="center">
+						<p:commandButton id="btnActualizar" value="Actualizar"
+							action="#{productosMB.actualizar}" update=":frmAdmProductos"
+							oncomplete="PF('dlgEditar').hide();" />
+	
+						<p:commandButton id="btnCancelar" value="Cancelar"
+							onclick="PF('dlgEditar').hide();" type="reset" />
+					</div>
+				</h:form>
+			</p:dialog>
+        	
+        	
+        </h:body>
+
+    </h:body>
+</html>
